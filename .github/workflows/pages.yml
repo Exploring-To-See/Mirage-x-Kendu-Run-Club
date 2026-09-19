@@ -1,0 +1,31 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [claude/github-artifact-hosting-cpra7d]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+
+jobs:
+  serve-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Point GitHub Pages at this branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -o pipefail
+          if gh api "repos/$GITHUB_REPOSITORY/pages" >/dev/null 2>&1; then
+            method=PUT
+          else
+            method=POST
+          fi
+          echo "Using $method to configure Pages for branch $BRANCH"
+          gh api --method "$method" "repos/$GITHUB_REPOSITORY/pages" \
+            -f "source[branch]=$BRANCH" -f "source[path]=/" || true
+          gh api "repos/$GITHUB_REPOSITORY/pages" | tee pages.json
+          echo "site=$(jq -r .html_url pages.json)" >> "$GITHUB_STEP_SUMMARY"
