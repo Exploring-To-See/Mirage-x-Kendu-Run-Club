@@ -23,16 +23,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Stage the site
+      # The workflow token may not create a Pages site, so a repo admin turns
+      # Pages on once under Settings > Pages. Until the source is set to
+      # "GitHub Actions" there is nothing for this job to deploy to.
+      - name: Check how Pages is configured
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          build_type=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || echo none)
+          echo "build_type=$build_type" >> "$GITHUB_OUTPUT"
+          case "$build_type" in
+            workflow)
+              echo "Pages source is GitHub Actions - deploying." >> "$GITHUB_STEP_SUMMARY" ;;
+            legacy)
+              echo "Pages serves a branch directly, so this workflow has nothing to do." >> "$GITHUB_STEP_SUMMARY" ;;
+            *)
+              echo "Pages is not enabled. Enable it under Settings > Pages (source: GitHub Actions), then re-run this workflow." >> "$GITHUB_STEP_SUMMARY" ;;
+          esac
+
+      - if: steps.check.outputs.build_type == 'workflow'
+        name: Stage the site
         run: |
           mkdir -p _site
           cp index.html run-video.mp4 .nojekyll _site/
 
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
+      - if: steps.check.outputs.build_type == 'workflow'
+        uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v3
+      - if: steps.check.outputs.build_type == 'workflow'
+        uses: actions/upload-pages-artifact@v3
 
-      - id: deployment
+      - if: steps.check.outputs.build_type == 'workflow'
+        id: deployment
         uses: actions/deploy-pages@v4
