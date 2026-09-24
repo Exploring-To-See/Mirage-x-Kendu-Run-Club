@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+
+# Pinterest OAuth token cache — contains live access + refresh tokens
+.pinterest-token.json
+
+# Media pulled down from Pinterest at sync time
+assets/pinterest/

@@ -1,0 +1,21 @@
+{
+  "name": "mirage-x-kendu-run-club",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mirage x Kendu Run Club — Pinterest API integration and video tooling",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "pinterest:authorize": "tsx scripts/authorize.ts",
+    "pinterest:whoami": "tsx scripts/whoami.ts",
+    "pinterest:sync": "tsx scripts/sync-boards.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
